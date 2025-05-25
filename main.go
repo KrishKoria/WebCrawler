@@ -62,9 +62,5 @@ func main() {
 	cfg.wg.Add(1)
 	go cfg.crawlPage(website)
 	cfg.wg.Wait()
-	
-	fmt.Println("\nCrawl complete! Pages found:")
-    for url, count := range cfg.pages {
-        fmt.Printf("%d: %s\n", count, url)
-    }
+	printReport(cfg.pages, website)
 }
