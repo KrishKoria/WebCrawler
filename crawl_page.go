@@ -10,6 +10,13 @@ func (cfg *Config) crawlPage(rawCurrentURL string) {
 	defer func() { <- cfg.concurrencyControl} ()
 
 	cfg.concurrencyControl <- struct{}{}
+
+	cfg.mu.Lock()
+    if len(cfg.pages) >= cfg.maxPages {
+        cfg.mu.Unlock()
+        return
+    }
+    cfg.mu.Unlock()
     
     currentURL, err := url.Parse(rawCurrentURL)
     if err != nil {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strconv"
 	"sync"
 )
 
@@ -13,6 +14,7 @@ type Config struct {
 	mu                 *sync.Mutex
 	concurrencyControl chan struct{}
 	wg                 *sync.WaitGroup
+	maxPages           int
 }
 
 func main() {
@@ -21,11 +23,25 @@ func main() {
 		println("no website provided")
 		os.Exit(1)
 	}
-	if len(args) > 1 {
+	if len(args) > 3 {
 		println("too many arguments provided")
 		os.Exit(1)
 	}
 	website := args[0]
+	maxConcurrencyStr := args[1]
+    maxPagesStr := args[2]
+
+	maxConcurrency, err := strconv.Atoi(maxConcurrencyStr)
+	if err != nil || maxConcurrency <= 0 {
+		fmt.Printf("invalid max concurrency: %s\n", maxConcurrencyStr)
+		os.Exit(1)
+	}
+	maxPages, err := strconv.Atoi(maxPagesStr)
+	if err != nil || maxPages <= 0 {
+		fmt.Printf("invalid max pages: %s\n", maxPagesStr)
+		os.Exit(1)
+	}
+
 	fmt.Printf("starting crawl of: %s\n", website)
 
 	baseURL, err := url.Parse(website)
@@ -40,6 +56,7 @@ func main() {
 		mu:                 &sync.Mutex{},
 		concurrencyControl: make(chan struct{}, 10),
 		wg:                 &sync.WaitGroup{},
+		maxPages:           maxPages,
 	}
 
 	cfg.wg.Add(1)
